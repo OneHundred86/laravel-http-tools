@@ -50,9 +50,9 @@ use Illuminate\Support\Facades\Http;
 use Oh86\Http\Exceptions\HttpRequestException;
 
 $url = 'https://api.test/test';
-$params = ['foo' => 'bar'];
+$datas = ['foo' => 'bar'];
 $headers = ['X-Test' => 'test'];
-$r = Http::withHeaders($headers)->get($url, $params);
+$r = Http::withHeaders($headers)->get($url, $datas);
 
 if ($response->json('code') !== 0) {
     // 将响应json响应给客户端
@@ -60,7 +60,7 @@ if ($response->json('code') !== 0) {
         $r->status(),
         $r->body(),
         $url,
-        $params,
+        $datas,
         $headers,
     );
 }

@@ -43,7 +43,7 @@ abstract class AbstractTokenSession
 
     /**
      * @param string $token
-     * @return static
+     * @return self
      */
     public static function load(string $token)
     {

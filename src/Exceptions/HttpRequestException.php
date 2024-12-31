@@ -30,7 +30,7 @@ class HttpRequestException extends \Exception implements Arrayable
      * 请求参数
      * @var array
      */
-    protected $params;
+    protected $datas;
 
     /**
      * 请求头
@@ -43,15 +43,15 @@ class HttpRequestException extends \Exception implements Arrayable
      * @param int $status   响应状态码
      * @param string $response     响应体
      * @param string $url      请求url
-     * @param array $params   请求参数
+     * @param array $datas   请求参数
      * @param array $headers  请求头
      */
-    public function __construct($status, $response, $url, $params = null, $headers = null)
+    public function __construct($status, $response, $url, $datas = null, $headers = null)
     {
         $this->status = $status;
         $this->response = $response;
         $this->url = $url;
-        $this->params = $params;
+        $this->datas = $datas;
         $this->headers = $headers;
         parent::__construct("请求错误：" . $response, $status);
     }
@@ -83,9 +83,9 @@ class HttpRequestException extends \Exception implements Arrayable
     /**
      * @return array|null
      */
-    public function getParams()
+    public function getDatas()
     {
-        return $this->params;
+        return $this->datas;
     }
 
     /**
@@ -105,7 +105,7 @@ class HttpRequestException extends \Exception implements Arrayable
             "status" => $this->status,
             "response" => $this->response,
             "url" => $this->url,
-            "params" => $this->params,
+            "datas" => $this->datas,
             "headers" => $this->headers,
         ];
     }
