@@ -1,0 +1,27 @@
+{
+    "name": "oh86/laravel-http-tools",
+    "description": "some http tools for laravel framework",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Oh86\\Http\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "chengj",
+            "email": "chen.gj@qq.com"
+        }
+    ],
+    "require-dev": {
+        "laravel/framework": "*"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Oh86\\Http\\HttpToolsServiceProvider"
+            ]
+        }
+    }
+}
