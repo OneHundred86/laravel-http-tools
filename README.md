@@ -83,12 +83,13 @@ use Oh86\Http\TokenSessions\AbstractTokenSession;
 
 class TestToken extends AbstractTokenSession
 {
-    protected $storeKeyPrefix = 'TestToken';
+    protected $storeKey = 'TestToken';
+    protected $ttl = 300;
 }
 
 
 // 首次生成token
-$t = new TestToken(300);
+$t = new TestToken();
 $t->put('foo', 'bar');
 // $t->save(); // auto save in destructor
 $token = $t->getToken();
@@ -97,5 +98,5 @@ $token = $t->getToken();
 // 其他地方使用token
 $t = TestToken::load($token);
 $val = $t->get('foo');
-$t->destroy();
+$t->destroy();  // 使用完手动销毁
 ```

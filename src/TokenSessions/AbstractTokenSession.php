@@ -6,20 +6,28 @@ use Illuminate\Support\Str;
 
 abstract class AbstractTokenSession
 {
-    protected string $token;
     /**
-     * @var null|string 
+     * @var string 
      */
-    protected $storeKeyPrefix = null;
-    private bool $isDirty = false;
-    private SessionData $data;
+    protected $storeKey = '';
 
     /**
-     * >1 表示设置ttl；
-     * 0 表示不修改ttl；
-     * -1 表示永久有效；
+     * @var int
      */
-    protected int $ttl;
+    protected $ttl = 300;
+
+    /**
+     * 更新ttl策略：once（只在首次保存的时候设置）/alwaysOnSave（每次保存都更新）
+     * @var string
+     */
+    protected $ttlUpdateStrategy = 'alwaysOnSave';
+
+
+    private string $token;
+    private bool $isDirty = false;
+    private SessionData $data;
+    private bool $everBeenStored = false; // 是否曾经存储过
+
 
     /** 
      * @var \Illuminate\Redis\Connections\PhpRedisConnection $store
@@ -28,13 +36,10 @@ abstract class AbstractTokenSession
     protected $store;
 
     /**
-     * @param int $ttl  >1 表示设置ttl；0 表示不修改ttl；-1 表示永久有效
-     * @param string $token     ''表示自动生成token
+     * @param null|string $token     null | '' 表示自动生成token
      */
-    final public function __construct(int $ttl = 60 * 10, string $token = '')
+    public function __construct(?string $token = null)
     {
-        $this->ttl = $ttl;
-
         $this->token = $token ?: Str::random(20);
 
         $this->data = new SessionData();
@@ -43,13 +48,13 @@ abstract class AbstractTokenSession
 
     /**
      * @param string $token
-     * @return self
+     * @return static
      */
     public static function load(string $token)
     {
-        // 要求：不允许重写构造函数
-        $ins = new static(0, $token);
+        $ins = new static($token);
         $ins->loadData();
+        $ins->everBeenStored = true;
 
         return $ins;
     }
@@ -74,9 +79,9 @@ abstract class AbstractTokenSession
         $this->token = $token;
     }
 
-    public function getStoreKeyPrefix(): string
+    public function getStoreKey(): string
     {
-        return $this->storeKeyPrefix ?: get_class($this);
+        return $this->storeKey ?: get_class($this);
     }
 
     public function has(string $key): bool
@@ -124,22 +129,26 @@ abstract class AbstractTokenSession
     public function save(bool $force = false): bool
     {
         $ret = false;
-        $key = $this->getStoreKey();
+        $key = $this->getRealStoreKey();
         if ($force || $this->isDirty) {
-            if ($this->ttl > 0) { // 设置ttl
+            if ($this->ttlUpdateStrategy == 'alwaysOnSave') {
                 $ret = $this->store->set($key, $this->data->serialize(), 'EX', $this->ttl);
-            } elseif ($this->ttl === 0) {   // 不修改ttl
-                $oldTTL = $this->store->ttl($key);
-                if ($oldTTL > 0) {
-                    $ret = $this->store->set($key, $this->data->serialize(), 'EX', $oldTTL, 'XX');
-                } elseif ($oldTTL === -1) { // 永久保存
-                    $ret = $this->store->set($key, $this->data->serialize());
-                } else { // -2原先不存在，已过期，不保存
-                    $ret = false;
+            } elseif ($this->ttlUpdateStrategy == 'once') {
+                if ($this->everBeenStored) { // 不修改ttl
+                    $oldTTL = $this->store->ttl($key);
+                    if ($oldTTL > 0) {
+                        $ret = $this->store->set($key, $this->data->serialize(), 'EX', $oldTTL, 'XX');
+                    } elseif ($oldTTL === -1) { // 永久保存
+                        $ret = $this->store->set($key, $this->data->serialize());
+                    } else { // -2原先不存在，已过期，不保存
+                        $ret = false;
+                    }
+                } else { // 首次保存
+                    $ret = $this->store->set($key, $this->data->serialize(), 'EX', $this->ttl);
                 }
-            } else { // 永久保存
-                $ret = $this->store->set($key, $this->data->serialize());
             }
+
+            $this->everBeenStored = true;
         }
 
         $this->isDirty = false;
@@ -154,23 +163,23 @@ abstract class AbstractTokenSession
     public function destroy(): void
     {
         $this->data->clear();
-        $this->store->del($this->getStoreKey());
+        $this->store->del($this->getRealStoreKey());
         $this->isDirty = false;
     }
 
-    public function getStoreKey(): string
+    public function getRealStoreKey(): string
     {
         return $this->wrapToken($this->token);
     }
 
     protected function wrapToken(string $token): string
     {
-        return sprintf("%s:%s", $this->getStoreKeyPrefix(), $token);
+        return sprintf("%s:%s", $this->getStoreKey(), $token);
     }
 
     protected function loadData()
     {
-        $serialized = $this->store->get($this->getStoreKey());
+        $serialized = $this->store->get($this->getRealStoreKey());
         if ($serialized) {
             $this->data->unserialize($serialized);
         }
