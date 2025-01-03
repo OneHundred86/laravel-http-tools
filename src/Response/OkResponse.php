@@ -8,6 +8,6 @@ class OkResponse extends ErrorResponse
 {
     public function __construct($data = null, int $status = 200, array $headers = [], $options = 0, bool $json = false)
     {
-        parent::__construct(ErrorCode::OK, null, $data);
+        parent::__construct(ErrorCode::OK, null, $data, $status, $headers, $options, $json);
     }
 }
