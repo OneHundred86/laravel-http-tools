@@ -182,7 +182,7 @@ abstract class AbstractTokenSession
      */
     public function destroy(): void
     {
-        $this->data->clear();
+        $this->data->flush();
         $this->store->del($this->getRealStoreKey());
         $this->isDirty = false;
     }
