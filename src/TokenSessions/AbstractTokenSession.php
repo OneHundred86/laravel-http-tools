@@ -126,6 +126,26 @@ abstract class AbstractTokenSession
         $this->isDirty = true;
     }
 
+    public function clear(): void
+    {
+        $this->data->clear();
+        $this->isDirty = true;
+    }
+
+    public function increment(string $key, int $value = 1): int
+    {
+        $ret = $this->data->increment($key, $value);
+        $this->isDirty = true;
+        return $ret;
+    }
+
+    public function decrement(string $key, int $value = 1): int
+    {
+        $ret = $this->data->decrement($key, $value);
+        $this->isDirty = true;
+        return $ret;
+    }
+
     public function save(bool $force = false): bool
     {
         $ret = false;

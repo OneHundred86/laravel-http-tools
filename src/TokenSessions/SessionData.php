@@ -56,6 +56,34 @@ class SessionData implements Serializable, Stringable
         $this->data = [];
     }
 
+    /**
+     * 增量，返回操作后的值
+     * @param string $key
+     * @param int $value
+     * @return int
+     */
+    public function increment(string $key, int $value = 1)
+    {
+        $old = $this->get($key, 0);
+        $new = $old + $value;
+        $this->put($key, $new);
+        return $new;
+    }
+
+    /**
+     * 减量，返回操作后的值
+     * @param string $key
+     * @param int $value
+     * @return int
+     */
+    public function decrement(string $key, int $value = 1)
+    {
+        $old = $this->get($key, 0);
+        $new = $old - $value;
+        $this->put($key, $new);
+        return $new;
+    }
+
     public function serialize()
     {
         return serialize($this->data);
