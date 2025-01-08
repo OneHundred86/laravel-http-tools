@@ -126,9 +126,9 @@ abstract class AbstractTokenSession
         $this->isDirty = true;
     }
 
-    public function clear(): void
+    public function flush(): void
     {
-        $this->data->clear();
+        $this->data->flush();
         $this->isDirty = true;
     }
 

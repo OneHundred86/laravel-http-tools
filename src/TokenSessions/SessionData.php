@@ -51,7 +51,7 @@ class SessionData implements Serializable, Stringable
         Arr::forget($this->data, $keys);
     }
 
-    public function clear()
+    public function flush()
     {
         $this->data = [];
     }
