@@ -122,7 +122,7 @@ abstract class AbstractTokenSession
      */
     public function forget($keys): void
     {
-        $this->data->forget($$keys);
+        $this->data->forget($keys);
         $this->isDirty = true;
     }
 
