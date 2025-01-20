@@ -16,14 +16,14 @@ class MutexRequestByArg
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure $next
      * @param  string  $argName
-     * @param  null|string  $lockId     缺省为路由uri
      * @param  int  $waitSeconds
      * @param  int  $lockSeconds
+     * @param  string  $lockId     空字符串为路由uri
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-    public function handle(Request $request, Closure $next, string $argName, $lockId = null, int $waitSeconds = 10, int $lockSeconds = 300)
+    public function handle(Request $request, Closure $next, string $argName, int $waitSeconds = 10, int $lockSeconds = 300, string $lockId = '')
     {
-        $lockId ??= $request->route()->uri();
+        $lockId = $lockId ?: $request->route()->uri();
         $val = $request->$argName;
         $lockName = "mutexRequest:$lockId:$argName:$val";
         $lock = Cache::lock($lockName, $lockSeconds);
