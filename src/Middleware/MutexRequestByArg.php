@@ -14,16 +14,18 @@ class MutexRequestByArg
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
+     * @param  \Closure $next
      * @param  string  $argName
+     * @param  null|string  $lockId     缺省为路由uri
      * @param  int  $waitSeconds
      * @param  int  $lockSeconds
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-    public function handle(Request $request, Closure $next, string $argName, int $waitSeconds = 10, int $lockSeconds = 300)
+    public function handle(Request $request, Closure $next, string $argName, $lockId = null, int $waitSeconds = 10, int $lockSeconds = 300)
     {
+        $lockId ??= $request->route()->uri();
         $val = $request->$argName;
-        $lockName = "mutexRequest:$argName:$val";
+        $lockName = "mutexRequest:$lockId:$argName:$val";
         $lock = Cache::lock($lockName, $lockSeconds);
 
         $isLocked = false;
