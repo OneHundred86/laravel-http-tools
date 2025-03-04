@@ -74,6 +74,16 @@ class Result implements Arrayable
     }
 
     /**
+     * @param string $key
+     * @param mixed $value
+     */
+    public function dataSet($key, $value)
+    {
+        $this->data ??= [];
+        Arr::set($this->data, $key, $value);
+    }
+
+    /**
      * @return array
      */
     public function toArray()
